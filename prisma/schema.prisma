@@ -1,0 +1,71 @@
+datasource db {
+  provider = "sqlite"
+  // provider = "postgresql"  // Vercel 배포 시 교체
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role       { GUEST MEMBER ADMIN }
+enum LogStatus  { PENDING SUCCESS FAILED REFUNDED }
+enum TxType     { DEDUCT REFUND ADMIN_ADJUST SIGNUP_BONUS }
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String?
+  role            Role     @default(MEMBER)
+  points          Int      @default(100)
+  dailyUsageCount Int      @default(0)
+  dailyResetAt    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  logs            UsageLog[]
+  transactions    PointTransaction[]
+}
+
+model Feature {
+  id              String   @id @default(cuid())
+  name            String   @unique
+  displayName     String
+  description     String   @default("")
+  pointCost       Int      @default(10)
+  enabled         Boolean  @default(true)
+  dailyLimit      Int      @default(10)
+  timeoutSeconds  Int      @default(30)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model UsageLog {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id])
+  featureName     String
+  status          LogStatus @default(PENDING)
+  pointsUsed      Int
+  idempotencyKey  String    @unique
+  resultData      String?
+  errorMsg        String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId, createdAt])
+  @@index([featureName, createdAt])
+}
+
+model PointTransaction {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  amount       Int
+  type         TxType
+  reason       String
+  balanceAfter Int
+  createdAt    DateTime @default(now())
+
+  @@index([userId, createdAt])
+}
