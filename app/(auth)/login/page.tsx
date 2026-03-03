@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import bcrypt from "bcryptjs";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -23,11 +22,10 @@ export default function LoginPage() {
   const handleRegister = async () => {
     if (password.length < 6) { setError("비밀번호는 6자 이상이어야 합니다"); return; }
     setLoading(true); setError("");
-    const hash = await bcrypt.hash(password, 10);
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password: hash, name }),
+      body: JSON.stringify({ email, password, name }),
     });
     const json = await res.json();
     if (!json.ok) { setError(json.error); setLoading(false); return; }
