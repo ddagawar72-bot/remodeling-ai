@@ -16,7 +16,8 @@ interface LogEntry {
 const DAILY_LIMIT = 10;
 
 export default function MyPage() {
-  const { data: session } = useSession();
+  const sessionData = useSession();
+const session = sessionData?.data;
   const user = session?.user as SessionUser | undefined;
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [dailyCount, setDailyCount] = useState(0);
