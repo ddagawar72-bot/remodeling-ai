@@ -86,7 +86,7 @@ export default function Home() {
       {/* CTA */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
         <Link
-          href="/analyze"
+         href="/login"
           style={{
             background: "var(--ac)",
             color: "var(--bg)",
