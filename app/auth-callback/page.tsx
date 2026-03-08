@@ -22,13 +22,12 @@ export default function AuthCallbackPage() {
       };
 
       if (window.opener && !window.opener.closed) {
-        // jeon.shop으로 유저 정보 전송 후 팝업 닫기
-        try {
-          window.opener.postMessage(payload, "*");
-        } catch(e) {}
-        setTimeout(() => window.close(), 300);
+        // jeon.shop에 로그인 정보 전송
+        window.opener.postMessage(payload, "*");
+        // 잠깐 후 팝업 닫기 (remodeling-ai는 로그인 유지됨)
+        setTimeout(() => window.close(), 500);
       } else {
-        // 팝업이 아닌 경우 jeon.shop 홈으로 이동
+        // 팝업이 아닌 경우 jeon.shop으로 이동
         window.location.href = "https://jeon.shop";
       }
     } else if (status === "unauthenticated") {
@@ -50,18 +49,21 @@ export default function AuthCallbackPage() {
       justifyContent: "center",
       background: "#f8f6f2",
       fontFamily: "'DM Sans', sans-serif",
+      gap: 16,
     }}>
       <div style={{
-        width: 36,
-        height: 36,
+        width: 40,
+        height: 40,
         border: "2px solid rgba(158,122,82,.2)",
         borderTop: "2px solid #9e7a52",
         borderRadius: "50%",
         animation: "spin 0.8s linear infinite",
-        marginBottom: 14,
       }} />
       <div style={{ fontSize: 11, letterSpacing: 3, color: "#9e7a52", textTransform: "uppercase" }}>
-        로그인 중...
+        로그인 연동 중...
+      </div>
+      <div style={{ fontSize: 10, color: "#aaa", letterSpacing: 1 }}>
+        jeon.shop + AI MBTI 동시 로그인
       </div>
       <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
