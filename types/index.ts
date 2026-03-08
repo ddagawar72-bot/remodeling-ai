@@ -2,7 +2,6 @@ import type { Role, LogStatus, TxType } from "@prisma/client";
 
 export type { Role, LogStatus, TxType };
 
-// ─── Auth ────────────────────────────────────
 export interface SessionUser {
   id: string;
   email: string;
@@ -11,22 +10,13 @@ export interface SessionUser {
   points: number;
 }
 
-// ─── API Response ────────────────────────────
-export interface ApiSuccess<T = unknown> {
-  ok: true;
-  data: T;
-}
-export interface ApiError {
-  ok: false;
-  error: string;
-  code?: string;
-}
+export interface ApiSuccess<T = unknown> { ok: true; data: T; }
+export interface ApiError { ok: false; error: string; code?: string; }
 export type ApiResponse<T = unknown> = ApiSuccess<T> | ApiError;
 
-// ─── Feature Execution ───────────────────────
 export interface ExecuteRequest {
   featureName: string;
-  imageBase64: string;         // data:image/... base64
+  imageBase64: string;
   mimeType: "image/jpeg" | "image/png" | "image/webp";
   prompt?: string;
   idempotencyKey: string;
@@ -34,22 +24,35 @@ export interface ExecuteRequest {
 
 export interface ExecuteResult {
   logId: string;
-  analysis: InteriorAnalysis;
+  analysis: HouseMBTI;
   pointsUsed: number;
   remainingPoints: number;
 }
 
-export interface InteriorAnalysis {
-  style: string;
-  summary: string;
-  strengths: string[];
-  improvements: string[];
+export interface HouseMBTI {
+  mbti: string;
+  mbtiName: string;
+  description: string;
+  traits: string[];
   colorPalette: string[];
-  estimatedBudget: string;
-  recommendations: string[];
+  style: string;
 }
 
-// ─── Admin ───────────────────────────────────
+export interface CompatibilityResult {
+  score: number;
+  grade: string;
+  summary: string;
+  pros: string[];
+  cons: string[];
+  improvements: {
+    area: string;
+    current: string;
+    suggestion: string;
+  }[];
+}
+
+export type InteriorAnalysis = HouseMBTI;
+
 export interface UserRow {
   id: string;
   email: string;
