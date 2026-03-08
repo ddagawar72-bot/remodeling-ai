@@ -12,7 +12,7 @@ export const authOptions: NextAuthOptions = {
   providers: [
     KakaoProvider({
       clientId: process.env.KAKAO_CLIENT_ID!,
-      clientSecret: process.env.KAKAO_CLIENT_SECRET!,
+      clientSecret: process.env.KAKAO_CLIENT_SECRET ?? "kakao_secret",
     }),
 
     CredentialsProvider({
@@ -45,8 +45,6 @@ export const authOptions: NextAuthOptions = {
       if (account?.provider === "kakao") {
         if (!user.email) return false;
         const email = user.email.toLowerCase().trim();
-
-        // 이미 있으면 그냥 통과, 없으면 자동 가입
         const existing = await db.user.findUnique({ where: { email } });
         if (!existing) {
           await db.user.create({
@@ -64,15 +62,15 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, account, trigger }) {
-      // 1) 일반 이메일 로그인
+      // 일반 로그인
       if (account?.provider === "credentials" && user) {
-        token.id    = user.id;
-        token.role  = (user as SessionUser).role ?? "MEMBER";
+        token.id     = user.id;
+        token.role   = (user as SessionUser).role ?? "MEMBER";
         token.points = (user as SessionUser).points ?? 0;
         return token;
       }
 
-      // 2) 카카오 로그인 - signIn 콜백 직후 DB에서 유저 조회
+      // 카카오 최초 로그인
       if (account?.provider === "kakao") {
         const email = user?.email ?? (token.email as string | undefined);
         if (email) {
@@ -84,15 +82,26 @@ export const authOptions: NextAuthOptions = {
             token.id     = dbUser.id;
             token.role   = dbUser.role;
             token.points = dbUser.points;
-            token.name   = dbUser.name ?? token.name;
+            token.name   = dbUser.name ?? user?.name;
           }
         }
-        // role이 없으면 기본값
         if (!token.role) token.role = "MEMBER";
         return token;
       }
 
-      // 3) 이후 요청 - 포인트 최신화
+      // 이후 요청 - role이 없으면 DB에서 다시 가져오기
+      if (token.id && !token.role) {
+        const dbUser = await db.user.findUnique({
+          where: { id: token.id as string },
+          select: { role: true, points: true },
+        });
+        if (dbUser) {
+          token.role   = dbUser.role;
+          token.points = dbUser.points;
+        }
+      }
+
+      // 포인트 최신화
       if (trigger === "update" && token.id) {
         const fresh = await db.user.findUnique({
           where: { id: token.id as string },
@@ -104,9 +113,7 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // role 항상 보장
       if (!token.role) token.role = "MEMBER";
-
       return token;
     },
 
