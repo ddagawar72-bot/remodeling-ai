@@ -62,18 +62,21 @@ export const authOptions: NextAuthOptions = {
             },
           });
         }
+        return true;
       }
       return true;
     },
 
     async jwt({ token, user, account, trigger }) {
-      if (user) {
+      // 일반 로그인(credentials)
+      if (user && account?.provider === "credentials") {
         token.id = user.id;
         token.role = (user as SessionUser).role;
         token.points = (user as SessionUser).points;
+        return token;
       }
 
-      // 카카오 로그인 시 DB에서 id/role/points 가져오기
+      // 카카오 로그인 - email로 DB 유저 찾아서 token에 저장
       if (account?.provider === "kakao" && user?.email) {
         const dbUser = await db.user.findUnique({
           where: { email: user.email },
@@ -84,10 +87,11 @@ export const authOptions: NextAuthOptions = {
           token.role = dbUser.role;
           token.points = dbUser.points;
         }
+        return token;
       }
 
-      // 포인트 최신화
-      if (trigger === "update" || !token.points) {
+      // 포인트 최신화 (update 트리거 시)
+      if (trigger === "update" && token.id) {
         const fresh = await db.user.findUnique({
           where: { id: token.id as string },
           select: { points: true, role: true },
@@ -97,14 +101,15 @@ export const authOptions: NextAuthOptions = {
           token.role = fresh.role;
         }
       }
+
       return token;
     },
 
     async session({ session, token }) {
-      if (session.user) {
+      if (session.user && token.id) {
         (session.user as SessionUser).id = token.id as string;
         (session.user as SessionUser).role = token.role as SessionUser["role"];
-        (session.user as SessionUser).points = token.points as number;
+        (session.user as SessionUser).points = token.points as number ?? 0;
       }
       return session;
     },
