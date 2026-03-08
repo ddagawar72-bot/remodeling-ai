@@ -5,7 +5,7 @@ import { useSession } from "next-auth/react";
 import type { SessionUser } from "@/types";
 
 const memberNav = [
-  { href: "/analyze", label: "AI 공간 분석", icon: "✦" },
+  { href: "/analyze", label: "우리집 MBTI", icon: "✦" },
   { href: "/mypage", label: "내 포인트 / 내역", icon: "◈" },
 ];
 const adminNav = [
