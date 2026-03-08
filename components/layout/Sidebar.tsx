@@ -28,15 +28,12 @@ export function Sidebar() {
       style={{ background: "var(--bg2)", borderColor: "var(--bd)" }}
     >
       {/* Logo */}
-      <div
-        className="px-6 py-5 border-b"
-        style={{ borderColor: "var(--bd)" }}
-      >
+      <div className="px-6 py-5 border-b" style={{ borderColor: "var(--bd)" }}>
         <div
           className="text-xs tracking-[5px] uppercase"
           style={{ color: "var(--ac)", fontFamily: "'DM Sans',sans-serif" }}
         >
-          Interior AI
+          AI MBTI
         </div>
         <div
           className="text-lg mt-1 tracking-widest"
