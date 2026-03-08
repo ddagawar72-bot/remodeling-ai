@@ -11,7 +11,7 @@ export default function LoginPage() {
   const [name, setName] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [kakaoLoading, setKakaoLoading] = useState(false);
+  const [googleLoading, setGoogleLoading] = useState(false);
 
   const handleLogin = async () => {
     setLoading(true); setError("");
@@ -34,9 +34,9 @@ export default function LoginPage() {
     router.push("/analyze");
   };
 
-  const handleKakao = async () => {
-    setKakaoLoading(true);
-    await signIn("kakao", { callbackUrl: "/analyze" });
+  const handleGoogle = async () => {
+    setGoogleLoading(true);
+    await signIn("google", { callbackUrl: "/analyze" });
   };
 
   return (
@@ -44,25 +44,27 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-10">
-          <div className="text-[9px] tracking-[5px] uppercase mb-2" style={{ color: "var(--ac)" }}>
-            AI MBTI
-          </div>
+          <div className="text-[9px] tracking-[5px] uppercase mb-2" style={{ color: "var(--ac)" }}>AI MBTI</div>
           <div className="text-3xl tracking-[8px] uppercase font-light" style={{ fontFamily: "'Cormorant Garamond',serif" }}>
             우리집 MBTI
           </div>
         </div>
 
-        {/* 카카오 로그인 버튼 */}
-        <button
-          onClick={handleKakao}
-          disabled={kakaoLoading}
-          className="w-full py-3.5 rounded flex items-center justify-center gap-3 text-sm font-medium mb-4 transition-all disabled:opacity-50"
-          style={{ background: "#FEE500", color: "#191919", fontFamily: "'DM Sans',sans-serif" }}
-        >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-            <path fillRule="evenodd" clipRule="evenodd" d="M9 1C4.58 1 1 3.91 1 7.5c0 2.28 1.39 4.28 3.5 5.5L3.76 16l3.74-2.5C7.82 13.66 8.4 13.75 9 13.75c4.42 0 8-2.91 8-6.25S13.42 1 9 1z" fill="#191919"/>
-          </svg>
-          {kakaoLoading ? "카카오 로그인 중..." : "카카오로 1초 로그인"}
+        {/* 구글 로그인 버튼 */}
+        <button onClick={handleGoogle} disabled={googleLoading}
+          className="w-full py-3.5 rounded flex items-center justify-center gap-3 text-sm font-medium mb-4 transition-all disabled:opacity-50 border"
+          style={{ background: "#fff", color: "#3c4043", borderColor: "#dadce0", fontFamily: "'DM Sans',sans-serif" }}>
+          {googleLoading ? (
+            <span className="inline-block w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <svg width="18" height="18" viewBox="0 0 18 18">
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.875 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 009 18z" fill="#34A853"/>
+              <path d="M3.964 10.707A5.41 5.41 0 013.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 000 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 00.957 4.96L3.964 7.293C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/>
+            </svg>
+          )}
+          {googleLoading ? "구글 로그인 중..." : "Google로 1초 로그인"}
         </button>
 
         {/* 구분선 */}
@@ -77,17 +79,9 @@ export default function LoginPage() {
           {/* Tabs */}
           <div className="flex border-b mb-6" style={{ borderColor: "var(--bd)" }}>
             {(["login", "register"] as const).map((t) => (
-              <button
-                key={t}
-                onClick={() => { setTab(t); setError(""); }}
+              <button key={t} onClick={() => { setTab(t); setError(""); }}
                 className="flex-1 pb-3 text-xs tracking-[2px] uppercase border-b-2 transition-all"
-                style={{
-                  color: tab === t ? "var(--ac)" : "var(--txm)",
-                  borderColor: tab === t ? "var(--ac)" : "transparent",
-                  fontFamily: "'DM Sans',sans-serif",
-                  marginBottom: "-1px",
-                }}
-              >
+                style={{ color: tab === t ? "var(--ac)" : "var(--txm)", borderColor: tab === t ? "var(--ac)" : "transparent", fontFamily: "'DM Sans',sans-serif", marginBottom: "-1px" }}>
                 {t === "login" ? "로그인" : "회원가입"}
               </button>
             ))}
