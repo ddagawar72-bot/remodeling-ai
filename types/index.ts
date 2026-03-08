@@ -31,26 +31,46 @@ export interface ExecuteResult {
 
 // 집 MBTI 분석 결과
 export interface HouseMBTI {
-  mbti: string;           // 예: "INFP"
-  mbtiName: string;       // 예: "감성 힐링 공간"
-  description: string;   // 집 MBTI 설명
-  traits: string[];       // 공간 특성 4가지
-  colorPalette: string[]; // 어울리는 색상
-  style: string;          // 인테리어 스타일
+  mbti: string;
+  mbtiName: string;
+  description: string;
+  traits: string[];
+  colorPalette: string[];
+  style: string;
 }
 
 // 궁합 결과
 export interface CompatibilityResult {
-  score: number;           // 0~100점
-  grade: string;           // 예: "환상의 궁합"
-  summary: string;         // 궁합 요약
-  pros: string[];          // 잘 맞는 점
-  cons: string[];          // 안 맞는 점
+  score: number;
+  grade: string;
+  summary: string;
+  pros: string[];
+  cons: string[];
   improvements: {
-    area: string;          // 예: "벽지", "조명"
-    current: string;       // 현재 상태
-    suggestion: string;    // 개선 제안
+    area: string;
+    current: string;
+    suggestion: string;
   }[];
+}
+
+// 운세 분석 결과 (사업운 / 자녀교육운 / 연애운)
+export type LuckType = "business" | "education" | "love";
+
+export interface LuckResult {
+  luckType: LuckType;
+  currentMbti: string;
+  targetMbti: string;
+  targetMbtiName: string;
+  currentScore: number;
+  afterScore: number;
+  summary: string;
+  improvements: {
+    area: string;
+    current: string;
+    suggestion: string;
+    reason: string;
+  }[];
+  tips: string[];
 }
 
 // 기존 호환성 유지
