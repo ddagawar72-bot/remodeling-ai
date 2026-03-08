@@ -25,7 +25,7 @@ export default function Home() {
             fontFamily: "'DM Sans',sans-serif",
           }}
         >
-          AI Interior Analysis
+          AI MBTI Analysis
         </div>
         <h1
           style={{
@@ -39,11 +39,11 @@ export default function Home() {
             lineHeight: 1.2,
           }}
         >
-          우리집 리모델링 고민
+          우리집 MBTI
         </h1>
         <p style={{ color: "var(--txm)", fontSize: 13, lineHeight: 1.8, maxWidth: 380, margin: "0 auto" }}>
-          사진 한 장으로 우리집 인테리어를 AI가 분석합니다.<br />
-          스타일 진단 · 개선 제안 · 예산 계획까지.
+          사진 한 장으로 우리집의 MBTI를 분석합니다.<br />
+          집 성격 진단 · 나와의 궁합 · 맞춤 인테리어 제안까지.
         </p>
       </div>
 
@@ -59,10 +59,10 @@ export default function Home() {
         }}
       >
         {[
-          { icon: "◈", label: "공간 분석", desc: "현재 인테리어 스타일 진단" },
-          { icon: "◆", label: "스타일 제안", desc: "맞춤형 개선 방향 제시" },
-          { icon: "◉", label: "예산 설계", desc: "현실적인 예산 범위 안내" },
-          { icon: "✦", label: "AI 제안서", desc: "전문가 수준의 리포트" },
+          { icon: "◈", label: "집 MBTI 진단", desc: "공간 사진으로 집의 성격 분석" },
+          { icon: "◆", label: "궁합 분석", desc: "나의 MBTI와 집의 궁합 점수" },
+          { icon: "◉", label: "개선 제안", desc: "벽지·조명·가구 맞춤 추천" },
+          { icon: "✦", label: "AI 리포트", desc: "전문가 수준의 인테리어 제안" },
         ].map((f) => (
           <div
             key={f.label}
@@ -86,7 +86,7 @@ export default function Home() {
       {/* CTA */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center" }}>
         <Link
-         href="/login"
+          href="/analyze"
           style={{
             background: "var(--ac)",
             color: "var(--bg)",
@@ -121,7 +121,7 @@ export default function Home() {
       </div>
 
       <p style={{ marginTop: 32, fontSize: 10, color: "var(--txm)", letterSpacing: 1 }}>
-        가입 시 100포인트 무료 지급 · AI 분석 10회 이용 가능
+        가입 시 100포인트 무료 지급 · MBTI 궁합 분석 10회 이용 가능
       </p>
     </main>
   );
