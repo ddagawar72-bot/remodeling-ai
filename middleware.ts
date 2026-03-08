@@ -6,7 +6,16 @@ export default withAuth(
   function middleware(req: NextRequestWithAuth) {
     const { pathname } = req.nextUrl;
     const token = req.nextauth.token;
-    const role = (token?.role as string | undefined) ?? "";
+
+    // token이 없으면 로그인 페이지로
+    if (!token) {
+      if (pathname.startsWith("/api/")) {
+        return NextResponse.json({ ok: false, error: "로그인이 필요합니다" }, { status: 401 });
+      }
+      return NextResponse.redirect(new URL("/login", req.url));
+    }
+
+    const role = (token.role as string | undefined) || "MEMBER";
 
     // Admin routes — ADMIN only
     if (pathname.startsWith("/admin") || pathname.startsWith("/api/admin")) {
@@ -18,27 +27,11 @@ export default withAuth(
       }
     }
 
-    // Member routes — MEMBER or ADMIN
-    if (
-      pathname.startsWith("/analyze") ||
-      pathname.startsWith("/mypage") ||
-      pathname.startsWith("/api/feature") ||
-      pathname.startsWith("/api/user")
-    ) {
-      if (!role || role === "GUEST") {
-        if (pathname.startsWith("/api/")) {
-          return NextResponse.json({ ok: false, error: "로그인이 필요합니다" }, { status: 401 });
-        }
-        return NextResponse.redirect(new URL("/login", req.url));
-      }
-    }
-
     return NextResponse.next();
   },
   {
     callbacks: {
-      // token이 있으면 무조건 통과 (role 체크는 위 함수에서)
-      authorized: ({ token }) => !!token,
+      authorized: () => true, // 모든 요청 통과 → 위 함수에서 처리
     },
   }
 );
