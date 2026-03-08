@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import KakaoProvider from "next-auth/providers/kakao";
+import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import type { SessionUser } from "@/types";
@@ -10,9 +10,9 @@ export const authOptions: NextAuthOptions = {
   pages: { signIn: "/login" },
 
   providers: [
-    KakaoProvider({
-      clientId: process.env.KAKAO_CLIENT_ID!,
-      clientSecret: process.env.KAKAO_CLIENT_SECRET ?? "kakao_secret",
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
 
     CredentialsProvider({
@@ -42,7 +42,7 @@ export const authOptions: NextAuthOptions = {
 
   callbacks: {
     async signIn({ user, account }) {
-      if (account?.provider === "kakao") {
+      if (account?.provider === "google") {
         if (!user.email) return false;
         const email = user.email.toLowerCase().trim();
         const existing = await db.user.findUnique({ where: { email } });
@@ -50,7 +50,7 @@ export const authOptions: NextAuthOptions = {
           await db.user.create({
             data: {
               email,
-              name: user.name ?? "카카오 회원",
+              name: user.name ?? "구글 회원",
               passwordHash: "",
               role: "MEMBER",
               points: 100,
@@ -70,8 +70,8 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // 카카오 최초 로그인
-      if (account?.provider === "kakao") {
+      // 구글 로그인
+      if (account?.provider === "google") {
         const email = user?.email ?? (token.email as string | undefined);
         if (email) {
           const dbUser = await db.user.findUnique({
@@ -89,7 +89,7 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // 이후 요청 - role이 없으면 DB에서 다시 가져오기
+      // 이후 요청 - role 없으면 DB 재조회
       if (token.id && !token.role) {
         const dbUser = await db.user.findUnique({
           where: { id: token.id as string },
