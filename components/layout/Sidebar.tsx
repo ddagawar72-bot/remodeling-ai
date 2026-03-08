@@ -42,7 +42,7 @@ export function Sidebar() {
           className="text-lg mt-1 tracking-widest"
           style={{ fontFamily: "'Cormorant Garamond',serif", fontWeight: 300 }}
         >
-          우리집 고민
+          우리집 MBTI
         </div>
       </div>
 
