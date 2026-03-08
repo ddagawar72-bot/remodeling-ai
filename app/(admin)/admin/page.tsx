@@ -20,6 +20,8 @@ export default function AdminDashboard() {
   const [adjustModal, setAdjustModal] = useState<UserRow | null>(null);
   const [adjustAmt, setAdjustAmt] = useState("");
   const [adjustReason, setAdjustReason] = useState("");
+  const [pointModal, setPointModal] = useState<FeatureRow | null>(null);
+  const [newPointCost, setNewPointCost] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,6 +45,23 @@ export default function AdminDashboard() {
     });
     if ((await res.json()).ok) {
       setFeatures((f) => f.map((x) => (x.id === id ? { ...x, enabled } : x)));
+    }
+  };
+
+  const handlePointCostUpdate = async () => {
+    if (!pointModal || !newPointCost) return;
+    const cost = Number(newPointCost);
+    if (isNaN(cost) || cost < 1) return;
+    const res = await fetch(`/api/admin/features?id=${pointModal.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ pointCost: cost }),
+    });
+    const json = await res.json();
+    if (json.ok) {
+      setFeatures((f) => f.map((x) => (x.id === pointModal.id ? { ...x, pointCost: cost } : x)));
+      setPointModal(null);
+      setNewPointCost("");
     }
   };
 
@@ -88,7 +107,7 @@ export default function AdminDashboard() {
           <table className="w-full text-sm">
             <thead>
               <tr style={{ background: "rgba(158,122,82,.06)", borderBottom: "1px solid var(--bd)" }}>
-                {["기능명", "포인트", "일일 한도", "상태", "토글"].map((h) => (
+                {["기능명", "포인트 비용", "일일 한도", "상태", "관리"].map((h) => (
                   <th key={h} className="px-4 py-3 text-left text-[10px] tracking-[2px] uppercase" style={{ color: "var(--txm)" }}>{h}</th>
                 ))}
               </tr>
@@ -100,7 +119,17 @@ export default function AdminDashboard() {
                     <div className="font-medium text-xs">{f.displayName}</div>
                     <div className="text-[10px]" style={{ color: "var(--txm)" }}>{f.name}</div>
                   </td>
-                  <td className="px-4 py-3 text-xs" style={{ color: "var(--ac)" }}>{f.pointCost} pt</td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium" style={{ color: "var(--ac)" }}>{f.pointCost} pt</span>
+                      <button
+                        onClick={() => { setPointModal(f); setNewPointCost(String(f.pointCost)); }}
+                        className="text-[9px] px-2 py-0.5 rounded border transition-all"
+                        style={{ borderColor: "rgba(158,122,82,.3)", color: "var(--ac)" }}>
+                        수정
+                      </button>
+                    </div>
+                  </td>
                   <td className="px-4 py-3 text-xs">{f.dailyLimit}회</td>
                   <td className="px-4 py-3">
                     <span className="text-[10px] px-2 py-0.5 rounded-full" style={{
@@ -115,8 +144,7 @@ export default function AdminDashboard() {
                     <button
                       onClick={() => toggleFeature(f.id, !f.enabled)}
                       className="text-[10px] px-3 py-1 rounded border transition-all"
-                      style={{ borderColor: "var(--bd)", color: "var(--txm)" }}
-                    >
+                      style={{ borderColor: "var(--bd)", color: "var(--txm)" }}>
                       {f.enabled ? "비활성화" : "활성화"}
                     </button>
                   </td>
@@ -155,11 +183,9 @@ export default function AdminDashboard() {
                   <td className="px-4 py-3 text-xs" style={{ color: "var(--ac)" }}>{u.points.toLocaleString()}</td>
                   <td className="px-4 py-3 text-xs">{u.dailyUsageCount}회</td>
                   <td className="px-4 py-3">
-                    <button
-                      onClick={() => setAdjustModal(u)}
+                    <button onClick={() => setAdjustModal(u)}
                       className="text-[10px] px-3 py-1 rounded border transition-all"
-                      style={{ borderColor: "rgba(158,122,82,.3)", color: "var(--ac)" }}
-                    >
+                      style={{ borderColor: "rgba(158,122,82,.3)", color: "var(--ac)" }}>
                       조정
                     </button>
                   </td>
@@ -188,17 +214,12 @@ export default function AdminDashboard() {
                   <td className="px-4 py-3" style={{ color: "var(--txm)" }}>{l.userEmail}</td>
                   <td className="px-4 py-3">{l.featureName}</td>
                   <td className="px-4 py-3">
-                    <span style={{
-                      color: l.status === "SUCCESS" ? "var(--ok)" : l.status === "PENDING" ? "var(--ac)" : "var(--dn)",
-                      fontSize: 10,
-                    }}>
+                    <span style={{ color: l.status === "SUCCESS" ? "var(--ok)" : l.status === "PENDING" ? "var(--ac)" : "var(--dn)", fontSize: 10 }}>
                       {l.status}
                     </span>
                   </td>
                   <td className="px-4 py-3" style={{ color: "var(--ac)" }}>{l.pointsUsed} pt</td>
-                  <td className="px-4 py-3" style={{ color: "var(--txm)" }}>
-                    {new Date(l.createdAt).toLocaleString("ko-KR")}
-                  </td>
+                  <td className="px-4 py-3" style={{ color: "var(--txm)" }}>{new Date(l.createdAt).toLocaleString("ko-KR")}</td>
                 </tr>
               ))}
             </tbody>
@@ -206,45 +227,61 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* 포인트 비용 수정 모달 */}
+      {pointModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
+          style={{ background: "rgba(28,26,23,.6)", backdropFilter: "blur(4px)" }}
+          onClick={() => setPointModal(null)}>
+          <div className="w-full max-w-sm p-6 rounded-lg border"
+            style={{ background: "var(--bg2)", borderColor: "var(--bdh)" }}
+            onClick={(e) => e.stopPropagation()}>
+            <div className="text-[9px] tracking-[4px] uppercase mb-4" style={{ color: "var(--ac)" }}>포인트 비용 수정</div>
+            <div className="text-sm mb-1" style={{ color: "var(--tx)" }}>{pointModal.displayName}</div>
+            <div className="text-xs mb-4" style={{ color: "var(--txm)" }}>현재: {pointModal.pointCost} pt</div>
+            <input
+              type="number"
+              placeholder="새 포인트 비용"
+              value={newPointCost}
+              onChange={(e) => setNewPointCost(e.target.value)}
+              className="w-full px-3 py-2.5 rounded border mb-4 text-sm"
+              style={{ background: "var(--bg)", borderColor: "var(--bd)", color: "var(--tx)" }}
+              min="1"
+            />
+            <div className="flex gap-3">
+              <button onClick={handlePointCostUpdate} className="flex-1 py-2.5 rounded text-xs tracking-[2px] uppercase" style={{ background: "var(--ac)", color: "var(--bg)" }}>
+                저장
+              </button>
+              <button onClick={() => setPointModal(null)} className="flex-1 py-2.5 rounded border text-xs tracking-[2px] uppercase" style={{ borderColor: "var(--bd)", color: "var(--txm)" }}>
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Point Adjust Modal */}
       {adjustModal && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center"
+        <div className="fixed inset-0 z-50 flex items-center justify-center"
           style={{ background: "rgba(28,26,23,.6)", backdropFilter: "blur(4px)" }}
-          onClick={() => setAdjustModal(null)}
-        >
-          <div
-            className="w-full max-w-sm p-6 rounded-lg border"
+          onClick={() => setAdjustModal(null)}>
+          <div className="w-full max-w-sm p-6 rounded-lg border"
             style={{ background: "var(--bg2)", borderColor: "var(--bdh)" }}
-            onClick={(e) => e.stopPropagation()}
-          >
+            onClick={(e) => e.stopPropagation()}>
             <div className="text-[9px] tracking-[4px] uppercase mb-4" style={{ color: "var(--ac)" }}>포인트 조정</div>
             <div className="text-sm mb-4" style={{ color: "var(--txm)" }}>
               {adjustModal.email} — 현재 {adjustModal.points} pt
             </div>
-            <input
-              type="number"
-              placeholder="조정 포인트 (양수/음수)"
-              value={adjustAmt}
+            <input type="number" placeholder="조정 포인트 (양수/음수)" value={adjustAmt}
               onChange={(e) => setAdjustAmt(e.target.value)}
               className="w-full px-3 py-2.5 rounded border mb-3 text-sm"
-              style={{ background: "var(--bg)", borderColor: "var(--bd)", color: "var(--tx)" }}
-            />
-            <input
-              type="text"
-              placeholder="사유"
-              value={adjustReason}
+              style={{ background: "var(--bg)", borderColor: "var(--bd)", color: "var(--tx)" }} />
+            <input type="text" placeholder="사유" value={adjustReason}
               onChange={(e) => setAdjustReason(e.target.value)}
               className="w-full px-3 py-2.5 rounded border mb-4 text-sm"
-              style={{ background: "var(--bg)", borderColor: "var(--bd)", color: "var(--tx)" }}
-            />
+              style={{ background: "var(--bg)", borderColor: "var(--bd)", color: "var(--tx)" }} />
             <div className="flex gap-3">
-              <button onClick={handleAdjust} className="flex-1 py-2.5 rounded text-xs tracking-[2px] uppercase" style={{ background: "var(--ac)", color: "var(--bg)" }}>
-                적용
-              </button>
-              <button onClick={() => setAdjustModal(null)} className="flex-1 py-2.5 rounded border text-xs tracking-[2px] uppercase" style={{ borderColor: "var(--bd)", color: "var(--txm)" }}>
-                취소
-              </button>
+              <button onClick={handleAdjust} className="flex-1 py-2.5 rounded text-xs tracking-[2px] uppercase" style={{ background: "var(--ac)", color: "var(--bg)" }}>적용</button>
+              <button onClick={() => setAdjustModal(null)} className="flex-1 py-2.5 rounded border text-xs tracking-[2px] uppercase" style={{ borderColor: "var(--bd)", color: "var(--txm)" }}>취소</button>
             </div>
           </div>
         </div>
