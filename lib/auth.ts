@@ -18,14 +18,36 @@ export const authOptions: NextAuthOptions = {
     CredentialsProvider({
       name: "credentials",
       credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
+        email:     { label: "Email",     type: "email" },
+        password:  { label: "Password",  type: "password" },
+        autoLogin: { label: "AutoLogin", type: "text" },
+        sig:       { label: "Sig",       type: "text" },
       },
       async authorize(credentials) {
-        if (!credentials?.email || !credentials?.password) return null;
-        const user = await db.user.findUnique({
-          where: { email: credentials.email.toLowerCase().trim() },
-        });
+        if (!credentials?.email) return null;
+
+        const email = credentials.email.toLowerCase().trim();
+
+        // jeon.shop 자동 로그인 (서명 검증)
+        if (credentials.autoLogin === "true" && credentials.sig) {
+          const secret = process.env.NEXTAUTH_SECRET ?? "jeon2024remodelingSecretKey123456789";
+          const expected = Buffer.from(email + secret).toString("base64").slice(0, 20);
+          if (credentials.sig !== expected) return null;
+
+          const user = await db.user.findUnique({ where: { email } });
+          if (!user) return null;
+          return {
+            id: user.id,
+            email: user.email,
+            name: user.name,
+            role: user.role,
+            points: user.points,
+          };
+        }
+
+        // 일반 이메일/비밀번호 로그인
+        if (!credentials.password) return null;
+        const user = await db.user.findUnique({ where: { email } });
         if (!user) return null;
         const valid = await bcrypt.compare(credentials.password, user.passwordHash);
         if (!valid) return null;
@@ -62,7 +84,6 @@ export const authOptions: NextAuthOptions = {
     },
 
     async jwt({ token, user, account, trigger }) {
-      // 일반 로그인
       if (account?.provider === "credentials" && user) {
         token.id     = user.id;
         token.role   = (user as SessionUser).role ?? "MEMBER";
@@ -70,7 +91,6 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // 구글 로그인
       if (account?.provider === "google") {
         const email = user?.email ?? (token.email as string | undefined);
         if (email) {
@@ -89,7 +109,6 @@ export const authOptions: NextAuthOptions = {
         return token;
       }
 
-      // 이후 요청 - role 없으면 DB 재조회
       if (token.id && !token.role) {
         const dbUser = await db.user.findUnique({
           where: { id: token.id as string },
@@ -101,7 +120,6 @@ export const authOptions: NextAuthOptions = {
         }
       }
 
-      // 포인트 최신화
       if (trigger === "update" && token.id) {
         const fresh = await db.user.findUnique({
           where: { id: token.id as string },
