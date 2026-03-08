@@ -15,7 +15,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    const result = await analyzeCompatibility(houseMbti, userMbti);
+    const result = await analyzeCompatibility({ houseMbti, userMbti });
     return NextResponse.json({ ok: true, data: result });
   } catch (err) {
     console.error("[compatibility]", err);
