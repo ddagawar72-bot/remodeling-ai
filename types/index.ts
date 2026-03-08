@@ -29,28 +29,31 @@ export interface ExecuteResult {
   remainingPoints: number;
 }
 
+// 집 MBTI 분석 결과
 export interface HouseMBTI {
-  mbti: string;
-  mbtiName: string;
-  description: string;
-  traits: string[];
-  colorPalette: string[];
-  style: string;
+  mbti: string;           // 예: "INFP"
+  mbtiName: string;       // 예: "감성 힐링 공간"
+  description: string;   // 집 MBTI 설명
+  traits: string[];       // 공간 특성 4가지
+  colorPalette: string[]; // 어울리는 색상
+  style: string;          // 인테리어 스타일
 }
 
+// 궁합 결과
 export interface CompatibilityResult {
-  score: number;
-  grade: string;
-  summary: string;
-  pros: string[];
-  cons: string[];
+  score: number;           // 0~100점
+  grade: string;           // 예: "환상의 궁합"
+  summary: string;         // 궁합 요약
+  pros: string[];          // 잘 맞는 점
+  cons: string[];          // 안 맞는 점
   improvements: {
-    area: string;
-    current: string;
-    suggestion: string;
+    area: string;          // 예: "벽지", "조명"
+    current: string;       // 현재 상태
+    suggestion: string;    // 개선 제안
   }[];
 }
 
+// 기존 호환성 유지
 export type InteriorAnalysis = HouseMBTI;
 
 export interface UserRow {
